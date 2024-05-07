@@ -14,19 +14,6 @@ services:
     networks:
       - backend
 
-  worker:
-    image: python:3.10-slim
-    volumes:
-      - .:/code
-    working_dir: /code
-    command: >
-      bash -c "pip install -r requirements.txt &&
-               celery -A your_project_name worker --loglevel=info"
-    depends_on:
-      - rabbitmq
-    networks:
-      - backend
-
 volumes:
   rabbitmq_data:
 

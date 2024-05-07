@@ -1,2 +1,2 @@
 cd djangorest
-celery -A jobs worker -l INFO
+celery -A jobs worker -l INFO -E
