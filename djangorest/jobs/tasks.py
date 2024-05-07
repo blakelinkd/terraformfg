@@ -1,5 +1,9 @@
 from celery import shared_task
+
 @shared_task
-def debug_task(self):
-    # Your processing logic for the URL
-    print(f'Request: {self.request!r}')
+def process_string(input_string):
+    # Dummy function to simulate processing
+    print(f"Processing the string: {input_string}")
+    # Imagine this saves the result to a database
+    # For now, it just returns the reversed string
+    return input_string[::-1]
