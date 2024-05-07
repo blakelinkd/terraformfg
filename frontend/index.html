@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Search</title>
+    <style>
+        .scan-status {
+            color: red;
+        }
+        .sub-table {
+            padding: 2px 6px 2px 6px;
+            border: 1px solid black;
+            margin-bottom: 5rem;
+            max-width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .sub-table:nth-of-type(odd) {
+            margin-top: 2rem;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="sub-table">
+        <h1>Scan for jobs</h1>
+        <p class="scan-status">Not Scanned</p>
+        <input type="text" id="scanSkillsInput" placeholder="Enter skills (comma-separated)">
+        <button onclick="scanJobs()">Search</button>
+    </div>
+    <div class="sub-table">
+        <h1>Job Search</h1>
+        <input type="text" id="skillsInput" placeholder="Enter skills (comma-separated)">
+        <button onclick="searchJobs()">Search</button>
+        <table id="jobsTable">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Company</th>
+                    <th>Skills</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        // Create some test rows in the API
+        async function createTestJobs() {
+            const job1 = {
+                url: "http://example.com/job1",
+                html_content: "Example content",
+                skills: "Python, Django",
+                compatibility: 5,
+                title: "Backend Developer",
+                company_name: "Tech Inc.",
+                location: "Remote",
+                has_applied: 0
+            };
+            const job2 = {
+                url: "http://example.com/job2",
+                html_content: "Example content",
+                skills: "JavaScript, React",
+                compatibility: 4,
+                title: "Frontend Developer",
+                company_name: "Web Corp.",
+                location: "On-site",
+                has_applied: 0
+            };
+            const job3 = {
+                url: "http://example.com/job3",
+                html_content: "Example content",
+                skills: "Java, Spring",
+                compatibility: 3,
+                title: "Full Stack Developer",
+                company_name: "IT Solutions",
+                location: "Remote",
+                has_applied: 0
+            };
+
+            await fetch("http://127.0.0.1:8000/jobs/create/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(job1),
+            });
+
+            await fetch("http://127.0.0.1:8000/jobs/create/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(job2),
+            });
+
+            await fetch("http://127.0.0.1:8000/jobs/create/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(job3),
+            });
+        }
+
+        async function scanJobs() {
+            const scanSkillsInput = document.getElementById("scanSkillsInput");
+            const scanSkills = scanSkillsInput.value.trim();
+
+            if (!scanSkills) {
+                alert("Please enter some skills.");
+                return;
+            }
+
+            const response = await fetch("http://127.0.0.1:8000/jobs/scan/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ scanSkills }),
+            });
+
+            const jobs = await response.json();
+
+            if (response.status === 200) {
+                displayJobs(jobs);
+            } else {
+                alert(`Error: ${jobs.error}`);
+            }
+        }
+
+        // Search for jobs based on skills
+        async function searchJobs() {
+            const skillsInput = document.getElementById("skillsInput");
+            const skills = skillsInput.value.trim();
+
+            if (!skills) {
+                alert("Please enter some skills.");
+                return;
+            }
+
+            const response = await fetch("http://127.0.0.1:8000/jobs/search/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ skills }),
+            });
+
+            const jobs = await response.json();
+
+            if (response.status === 200) {
+                displayJobs(jobs);
+            } else {
+                alert(`Error: ${jobs.error}`);
+            }
+        }
+
+        // Display the jobs in a table
+        function displayJobs(jobs) {
+            const jobsTable = document.getElementById("jobsTable");
+            const tableBody = jobsTable.getElementsByTagName("tbody")[0];
+            tableBody.innerHTML = "";
+
+            jobs.forEach(job => {
+                const row = tableBody.insertRow();
+                const titleCell = row.insertCell(0);
+                const companyCell = row.insertCell(1);
+                const skillsCell = row.insertCell(2);
+
+                titleCell.textContent = job.title;
+                companyCell.textContent = job.company_name;
+                skillsCell.textContent = job.skills;
+            });
+        }
+
+        // Create test jobs on page load
+        createTestJobs();
+    </script>
+</body>
+</html>

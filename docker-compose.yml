@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: 'rabbitmq:3-management'
+    ports:
+      - '5672:5672'   # AMQP protocol port
+      - '15672:15672' # Management interface port
+    environment:
+      RABBITMQ_DEFAULT_USER: 'user'
+      RABBITMQ_DEFAULT_PASS: 'password'
+    volumes:
+      - 'rabbitmq_data:/var/lib/rabbitmq'
+    networks:
+      - backend
+
+  worker:
+    image: python:3.10-slim
+    volumes:
+      - .:/code
+    working_dir: /code
+    command: >
+      bash -c "pip install -r requirements.txt &&
+               celery -A your_project_name worker --loglevel=info"
+    depends_on:
+      - rabbitmq
+    networks:
+      - backend
+
+volumes:
+  rabbitmq_data:
+
+networks:
+  backend:
+    driver: bridge
